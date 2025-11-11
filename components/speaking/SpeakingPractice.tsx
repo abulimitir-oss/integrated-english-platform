@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { SpeakingTask, SpeakingAttempt, PronunciationResult } from '@/lib/types/speaking'
 import { speakingService } from '@/lib/services/speaking'
-import { v4 as uuidv4 } from 'uuid'
 
 interface Props {
   task: SpeakingTask
@@ -73,7 +72,7 @@ export default function SpeakingPractice({ task, userId }: Props) {
 
       // 保存练习记录
       const attempt: SpeakingAttempt = {
-        id: uuidv4(),
+        id: crypto.randomUUID(),
         taskId: task.id,
         userId,
         audioUrl: audioUrl || '',
