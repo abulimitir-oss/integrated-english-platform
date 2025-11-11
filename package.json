@@ -6,11 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start -p $PORT",
-    "analyze": "ANALYZE=true npm run build",
-    "lint": "next lint",
-    "start:render": "next start -p 10000",
-    "start:local": "cross-env PORT=10000 next start"
+    "start": "next start -p $PORT"
   },
   "dependencies": {
     "@google-cloud/speech": "^7.2.1",
