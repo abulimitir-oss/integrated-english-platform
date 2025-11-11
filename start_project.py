@@ -58,15 +58,31 @@ def install_dependencies():
     print("\n[1/3] 프로젝트 의존성 설치 중...")
     return run_command_with_realtime_output('npm install && npm install lucide-react @google/generative-ai')
 
-def start_dev_server():
-    """개발 서버 시작"""
-    print("\n[2/3] 개발 서버 시작 중...")
+def build_project():
+    """프로젝트 빌드"""
+    print("\n[2/4] 프로젝트 빌드 중...")
+    # Next.js 프로젝트를 프로덕션용으로 빌드합니다.
+    return run_command_with_realtime_output('npm run build')
+
+def start_production_server():
+    """프로덕션 서버 시작"""
+    print("\n[3/4] 프로덕션 서버 시작 중...")
     # npm/Next.js가 자동으로 .env.local 파일을 읽으므로 Python에서 별도로 읽을 필요가 없습니다.
-    # npm run dev 프로세스는 올바른 환경 변수를 상속받게 됩니다.
-    return run_command_with_realtime_output('npm run dev')
+    # Render와 같은 배포 환경에서는 $PORT 환경 변수를 자동으로 제공합니다.
+    # package.json의 'start' 스크립트가 이미 $PORT를 사용하도록 설정되어 있습니다.
+    return run_command_with_realtime_output('npm run start')
+
 
 
 def main():
+    # 스크립트가 위치한 디렉터리 가져오기
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # 프로젝트 디렉터리로 이동
+    os.chdir(script_dir)
+    print(f"작업 디렉터리: {os.getcwd()}")
+
+    print_header()
     # 기본 인코딩을 UTF-8로 설정 (스크립트 시작 부분)
     if sys.stdout.encoding != 'utf-8':
         sys.stdout.reconfigure(encoding='utf-8')
@@ -74,13 +90,6 @@ def main():
         sys.stderr.reconfigure(encoding='utf-8')
 
     # 스크립트가 위치한 디렉터리 가져오기
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # 프로젝트 디렉터리로 이동
-    os.chdir(script_dir)
-    print(f"작업 디렉터리: {os.getcwd()}")
-    
-    print_header()
     
     # Node.js 확인
     if not check_node():
@@ -93,13 +102,19 @@ def main():
         input("Press Enter to continue...")
         sys.exit(1)
     
-    # 서버 시작
-    print("\n[3/3] 프로젝트 시작 중... (이 과정은 몇 분 정도 소요될 수 있습니다)")
+    # 프로젝트 빌드
+    if not build_project():
+        print("\n❌ 프로젝트 빌드 실패")
+        input("Press Enter to continue...")
+        sys.exit(1)
+
+    # 프로덕션 서버 시작
+    print("\n[4/4] 프로젝트 시작 중... (이 과정은 몇 분 정도 소요될 수 있습니다)")
     print("참고: 서버가 시작되면 http://localhost:3000 또는 http://localhost:3001 를 방문하세요")
     print("서버를 중지하려면 Ctrl+C 를 누르세요\n")
     
-    # 개발 서버 시작
-    start_dev_server()
+    # 프로덕션 서버 시작
+    start_production_server()
 
 if __name__ == "__main__":
     try:

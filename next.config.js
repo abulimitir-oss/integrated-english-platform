@@ -1,15 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
+
   env: {
     NODE_ENV: process.env.NODE_ENV || 'production', // 默认为 production
   },
-  // ... 其他配置
-};
-
-module.exports = nextConfig;
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
   experimental: {
     serverActions: {
       bodySizeLimit: '50mb',
@@ -30,4 +25,3 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-
