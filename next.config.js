@@ -2,9 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  env: {
-    NODE_ENV: process.env.NODE_ENV || 'production', // 默认为 production
-  },
   experimental: {
     serverActions: {
       bodySizeLimit: '50mb',
