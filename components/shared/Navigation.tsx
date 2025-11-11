@@ -19,16 +19,16 @@ const Navigation = () => {
   ]
 
   const { t } = useLanguage();
-    const navItems = [
-    { href: '/', icon: Home, label: t('home') },
-    { href: '/writing', icon: PenTool, label: t('writing') },
-    { href: '/conversation', icon: MessageSquare, label: t('conversation') },
-    { href: '/reading', icon: BookOpen, label: t('reading') },
-    { href: '/speaking', icon: Mic, label: t('speaking') },
-    { href: '/vocabulary', icon: Book, label: t('vocabulary') },
-    { href: '/level-test', icon: GraduationCap, label: t('levelTest') },
-    { href: '/community', icon: Users, label: 'Community' },
-  ]
+  const navItems = [
+    { href: '/', icon: Home, label: 'home' },
+    { href: '/writing', icon: PenTool, label: 'writing' },
+    { href: '/conversation', icon: MessageSquare, label: 'conversation' },
+    { href: '/reading', icon: BookOpen, label: 'reading' },
+    { href: '/speaking', icon: Mic, label: 'speaking' },
+    { href: '/vocabulary', icon: Book, label: 'vocabulary' },
+    { href: '/level-test', icon: GraduationCap, label: 'levelTest' },
+    { href: '/community', icon: Users, label: 'community' },
+  ] as const;
 
   return (
     <nav className="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">

@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { Users } from 'lucide-react'
 
 export default function CommunityPage() {
-  const { t } = useLanguage()
+  const { t } = useLanguage();
 
   return (
     <div className="container mx-auto px-4 py-8">

@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -8,13 +8,13 @@ import { VocabularyWord, UserWordProgress } from '@/lib/types/vocabulary'; // �
 const sm2 = (progress: UserWordProgress, quality: number): UserWordProgress => {
   if (quality < 3) {
     // 回答错误，重置
-    return { ...progress, repetition: 0, interval: 1 };
+    return { ...progress, repetitions: 0, interval: 1 };
   }
 
   let newInterval;
-  if (progress.repetition === 0) {
+  if (progress.repetitions === 0) {
     newInterval = 1;
-  } else if (progress.repetition === 1) {
+  } else if (progress.repetitions === 1) {
     newInterval = 6;
   } else {
     newInterval = Math.ceil(progress.interval * progress.easeFactor);
@@ -27,7 +27,7 @@ const sm2 = (progress: UserWordProgress, quality: number): UserWordProgress => {
 
   return {
     ...progress,
-    repetition: progress.repetition + 1,
+    repetitions: progress.repetitions + 1,
     interval: newInterval,
     easeFactor: Math.max(1.3, newEaseFactor),
     nextReviewDate: nextReview.toISOString(),
