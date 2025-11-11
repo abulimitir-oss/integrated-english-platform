@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start -p $PORT",
     "analyze": "ANALYZE=true npm run build",
-    "lint": "next lint"
+    "lint": "next lint",
+    "start:render": "next start -p 10000",
+    "start:local": "cross-env PORT=10000 next start"
   },
   "dependencies": {
     "@google-cloud/speech": "^7.2.1",
@@ -39,6 +41,7 @@
     "@types/node": "^20.10.5",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
+    "cross-env": "^10.1.0",
     "eslint": "^8.55.0",
     "eslint-config-next": "^15.0.0"
   }
