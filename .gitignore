@@ -1,0 +1,11 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+
+# build output
+/.next/
+
+# environment variables
+.env.local
+speech-to-text-project-477812-fd87093388d8.json

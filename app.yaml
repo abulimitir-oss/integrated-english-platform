@@ -1,0 +1,9 @@
+runtime: nodejs20 # 指定 Node.js 20 运行时
+
+# 添加此部分以解决警告并控制成本
+automatic_scaling:
+  max_instances: 1 # 对于开发或小型项目，从1开始是安全的
+
+# 对于 Next.js 应用，App Engine 会自动处理路由。
+# `handlers` 部分通常是不需要的，除非你有特殊的静态文件需求。
+# App Engine 会自动运行 `npm run build` 和 `npm start`。

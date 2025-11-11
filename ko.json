@@ -1,0 +1,9 @@
+{
+  "welcomeMessage": "우리 애플리케이션에 오신 것을 환영합니다!",
+  "buttons": {
+    "submit": "제출",
+    "cancel": "취소"
+  },
+  "greeting": "안녕하세요, {{name}}님!",
+  "itemCount_plural": "{{count}}개의 항목이 있습니다。"
+}

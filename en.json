@@ -1,0 +1,9 @@
+{
+  "welcomeMessage": "Welcome to our application!",
+  "buttons": {
+    "submit": "Submit",
+    "cancel": "Cancel"
+  },
+  "greeting": "Hello, {{name}}!",
+  "itemCount_plural": "You have {{count}} items."
+}

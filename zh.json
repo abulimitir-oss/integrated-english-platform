@@ -1,0 +1,9 @@
+{
+  "welcomeMessage": "欢迎使用我们的应用！",
+  "buttons": {
+    "submit": "提交",
+    "cancel": "取消"
+  },
+  "greeting": "你好, {{name}}！",
+  "itemCount_plural": "你有 {{count}} 个项目。"
+}

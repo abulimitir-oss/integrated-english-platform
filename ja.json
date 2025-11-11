@@ -1,0 +1,9 @@
+{
+  "welcomeMessage": "私たちのアプリケーションへようこそ！",
+  "buttons": {
+    "submit": "送信",
+    "cancel": "キャンセル"
+  },
+  "greeting": "こんにちは、{{name}}さん！",
+  "itemCount_plural": "{{count}}個のアイテムがあります。"
+}
