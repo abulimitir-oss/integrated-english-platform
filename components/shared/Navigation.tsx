@@ -2,13 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useAuth } from '@/components/shared/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { Home, PenTool, MessageSquare, BookOpen, Mic, Book, GraduationCap, Gamepad2, Users, Moon, Sun, Globe } from 'lucide-react'
+import { Home, PenTool, MessageSquare, BookOpen, Mic, Book, GraduationCap, Gamepad2, Users, Moon, Sun, Globe, LogOut } from 'lucide-react'
 
 const Navigation = () => {
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
+  const { logout } = useAuth()
   const { language, setLanguage } = useLanguage()
 
   const languages: Array<{ code: 'ko' | 'en' | 'ja' | 'zh'; name: string }> = [
@@ -20,7 +22,6 @@ const Navigation = () => {
 
   const { t } = useLanguage();
   const navItems = [
-    { href: '/', icon: Home, label: 'home' },
     { href: '/writing', icon: PenTool, label: 'writing' },
     { href: '/conversation', icon: MessageSquare, label: 'conversation' },
     { href: '/reading', icon: BookOpen, label: 'reading' },
@@ -103,6 +104,14 @@ const Navigation = () => {
               ) : (
                 <Sun size={20} className="text-gray-700 dark:text-gray-300" />
               )}
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={logout}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <LogOut size={20} className="text-gray-700 dark:text-gray-300" />
             </button>
           </div>
         </div>

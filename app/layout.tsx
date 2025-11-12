@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Layout from '@/components/shared/Layout'
 import { ClientProviders } from '@/components/shared/ClientProviders';
+import MainPage from './MainPage';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <body className={inter.className}>
         <ClientProviders>
-          <Layout>{children}</Layout>
+          <MainPage>{children}</MainPage>
         </ClientProviders>
       </body>
     </html>
