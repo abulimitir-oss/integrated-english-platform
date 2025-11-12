@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { SpeakingTask, SpeakingAttempt, PronunciationResult } from '@/lib/types/speaking'
 import { speakingService } from '@/lib/services/speaking'
 
@@ -16,6 +17,7 @@ export default function SpeakingPractice({ task, userId }: Props) {
   const [analysis, setAnalysis] = useState<PronunciationResult[] | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [feedback, setFeedback] = useState<string | null>(null)
+  const { t } = useLanguage()
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
 
@@ -29,6 +31,9 @@ export default function SpeakingPractice({ task, userId }: Props) {
   }, [audioUrl])
 
   const startRecording = async () => {
+    // 开始新的录音时，清除旧的反馈和结果
+    setFeedback(null)
+    setAnalysis(null)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       mediaRecorderRef.current = new MediaRecorder(stream)
@@ -66,6 +71,7 @@ export default function SpeakingPractice({ task, userId }: Props) {
     if (!audioBlob) return
 
     setIsAnalyzing(true)
+    setFeedback(null) // 开始分析前清除旧的反馈
     try {
       const results = await speakingService.analyzePronunciation(audioBlob, task.textPrompt)
       setAnalysis(results)
@@ -90,8 +96,12 @@ export default function SpeakingPractice({ task, userId }: Props) {
 
       await speakingService.saveAttempt(attempt)
     } catch (error) {
-      console.error('Error analyzing recording:', error)
-      setFeedback('分析录音时出错。请重试。')
+      console.error('Error analyzing recording:', error);
+      if (error instanceof Error) {
+        setFeedback(error.message); // 直接使用从API获取的更具体的错误信息
+      } else {
+        setFeedback('分析录音时发生未知错误。');
+      }
     } finally {
       setIsAnalyzing(false)
     }
@@ -213,7 +223,7 @@ export default function SpeakingPractice({ task, userId }: Props) {
 
         {/* 错误反馈 */}
         {feedback && (
-          <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg">
+          <div className="mt-4 p-4 text-center bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 rounded-lg border border-yellow-200 dark:border-yellow-800">
             {feedback}
           </div>
         )}

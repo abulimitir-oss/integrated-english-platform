@@ -25,10 +25,16 @@ class SpeakingService {
   }
 
   // 分析发音
-  async analyzePronunciation(audioBlob: Blob, text: string): Promise<PronunciationResult[]> {
+  async analyzePronunciation(
+    audioBlob: Blob,
+    text: string,
+    fileName: string = 'recording.webm' // 添加一个可选的文件名参数
+  ): Promise<PronunciationResult[]> {
     // 创建 FormData 来发送音频和文本
     const formData = new FormData();
-    formData.append('audio', audioBlob, 'recording.webm');
+    // 使用传入的文件名，如果未提供，则默认为 'recording.webm'
+    // 这使得我们可以处理 .mp3 或其他支持的格式
+    formData.append('audio', audioBlob, fileName);
     formData.append('text', text);
 
     try {
@@ -38,7 +44,11 @@ class SpeakingService {
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
+        // 尝试解析后端的JSON错误响应
+        const errorData = await response.json();
+        // 使用后端提供的具体错误信息，如果不存在则使用通用信息
+        const errorMessage = errorData.error || `API error: ${response.statusText}`;
+        throw new Error(errorMessage);
       }
 
       return await response.json();
