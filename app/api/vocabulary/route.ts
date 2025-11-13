@@ -1,6 +1,31 @@
 import { NextResponse } from 'next/server'
 import { generateVocabularyList } from '@/lib/ai/gemini';
 
+// --- 本地备用数据 ---
+const fallbackVocabulary = {
+  A1: [
+    { word: 'hello', meaning: '안녕하세요', example: 'You say hello, I say goodbye.' },
+    { word: 'book', meaning: '책', example: 'I am reading a very interesting book.' },
+    { word: 'water', meaning: '물', example: 'Please drink plenty of water.' },
+    { word: 'apple', meaning: '사과', example: 'An apple a day keeps the doctor away.' },
+    { word: 'house', meaning: '집', example: 'My house is in the city center.' },
+  ],
+  B2: [
+    { word: 'articulate', meaning: '분명히 표현하다', example: 'She is a highly articulate speaker.' },
+    { word: 'comprehensive', meaning: '종합적인', example: 'He has a comprehensive knowledge of the subject.' },
+    { word: 'elaborate', meaning: '상세히 설명하다', example: 'Could you elaborate on that point?' },
+    { word: 'feasible', meaning: '실행 가능한', example: 'We need to find a feasible solution to this problem.' },
+    { word: 'meticulous', meaning: '꼼꼼한', example: 'He was meticulous in his work.' },
+  ],
+  // 您可以为其他等级添加更多备用数据
+};
+
+function getFallbackData(level: string, count: number) {
+  const levelKey = level.toUpperCase() as keyof typeof fallbackVocabulary;
+  const data = fallbackVocabulary[levelKey] || fallbackVocabulary.A1; // 如果等级不存在，则默认返回 A1
+  return data.slice(0, count);
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -16,12 +41,16 @@ export async function POST(request: Request) {
         }
 
         // 如果 AI 提供商是 gemini，则调用 Gemini API
-        if (aiProvider === 'gemini') {
-          const vocabularyList = await generateVocabularyList(level, count);
-          return NextResponse.json(vocabularyList);
-        } else {
-          // 在这里可以保留或添加使用 OpenAI 或模拟数据的逻辑作为备用
-          return NextResponse.json({ error: `AI provider '${aiProvider}' is not configured for vocabulary generation.` }, { status: 501 });
+        try {
+          if (aiProvider === 'gemini') {
+            const vocabularyList = await generateVocabularyList(level, count);
+            return NextResponse.json(vocabularyList);
+          }
+          throw new Error(`AI provider '${aiProvider}' is not configured.`);
+        } catch (apiError) {
+          console.warn('API call failed, using fallback data. Reason:', apiError);
+          const fallbackData = getFallbackData(level, count);
+          return NextResponse.json(fallbackData);
         }
       }
 

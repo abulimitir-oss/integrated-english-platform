@@ -114,3 +114,40 @@ Please evaluate the pronunciation and provide a score (0-100) and detailed feedb
     throw new ApiError(error.message || 'Google 음성 분석 중 오류가 발생했습니다.', 500);
   }
 }
+
+// --- 词汇列表生成 ---
+
+export async function generateVocabularyList(
+  level: string,
+  count: number
+): Promise<Array<{ word: string; meaning: string; example: string }>> {
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const prompt = `You are an expert English teacher. Generate a list of ${count} English vocabulary words for the CEFR level "${level}".
+The output must be a valid JSON array of objects. Do not include any text or markdown formatting before or after the JSON array.
+Each object in the array must have the following keys: "word", "meaning" (in Korean), and "example" (an English sentence).
+
+Example format:
+[
+  {
+    "word": "example",
+    "meaning": "예시",
+    "example": "This is an example sentence."
+  }
+]`;
+
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+
+    // 清理并解析 JSON
+    const cleanedJson = responseText.replace(/```json\n|```/g, '').trim();
+    const vocabularyList = JSON.parse(cleanedJson);
+
+    return vocabularyList;
+
+  } catch (error: any) {
+    console.error('Gemini vocabulary generation error:', error);
+    // 抛出错误，以便上层可以捕获并启用备用方案
+    throw new ApiError(error.message || 'Gemini 어휘 목록 생성 중 오류가 발생했습니다.', 500);
+  }
+}
