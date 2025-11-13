@@ -3,7 +3,7 @@ import {
   correctGrammar as correctGrammarOpenAI,
   analyzePronunciation as analyzePronunciationOpenAI,
 } from './openai';
-import { generateConversation as generateConversationGemini } from './gemini';
+import { generateGeminiConversation as generateConversationGemini } from './gemini';
 
 // 根据环境变量选择 AI 提供商
 const AI_PROVIDER = process.env.AI_PROVIDER || 'openai'; // 默认使用 OpenAI
