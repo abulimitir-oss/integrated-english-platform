@@ -1,0 +1,32 @@
+{
+  "A1": [
+    { "question": "I ___ a student.", "options": ["am", "is", "are", "be"], "correctAnswerIndex": 0 },
+    { "question": "What is ___ name?", "options": ["you", "your", "yours", "you are"], "correctAnswerIndex": 1 },
+    { "question": "She ___ from France.", "options": ["am", "is", "are", "be"], "correctAnswerIndex": 1 }
+  ],
+  "A2": [
+    { "question": "I went to the cinema ___ night.", "options": ["yesterday", "last", "ago", "previous"], "correctAnswerIndex": 1 },
+    { "question": "He is ___ than his brother.", "options": ["tall", "taller", "tallest", "more tall"], "correctAnswerIndex": 1 },
+    { "question": "Have you ever ___ to Japan?", "options": ["be", "was", "been", "went"], "correctAnswerIndex": 2 }
+  ],
+  "B1": [
+    { "question": "If I ___ you, I would study harder.", "options": ["am", "was", "were", "be"], "correctAnswerIndex": 2 },
+    { "question": "She has been working here ___ 2010.", "options": ["for", "since", "ago", "from"], "correctAnswerIndex": 1 },
+    { "question": "I suggest ___ a doctor about this.", "options": ["to see", "seeing", "see", "should see"], "correctAnswerIndex": 1 }
+  ],
+  "B2": [
+    { "question": "By the time we arrived, the movie ___ already started.", "options": ["has", "had", "was", "is"], "correctAnswerIndex": 1 },
+    { "question": "Not only ___ sing, but she also plays the piano.", "options": ["she can", "can she", "she does", "does she"], "correctAnswerIndex": 3 },
+    { "question": "It is essential that he ___ the meeting.", "options": ["attends", "attend", "will attend", "attended"], "correctAnswerIndex": 1 }
+  ],
+  "C1": [
+    { "question": "___ the bad weather, the match went ahead.", "options": ["Although", "Despite", "However", "Even though"], "correctAnswerIndex": 1 },
+    { "question": "He is said ___ a brilliant scientist in his youth.", "options": ["to be", "to have been", "being", "having been"], "correctAnswerIndex": 1 },
+    { "question": "Rarely ___ such a beautiful sunset.", "options": ["I have seen", "have I seen", "I saw", "did I saw"], "correctAnswerIndex": 1 }
+  ],
+  "C2": [
+    { "question": "The committee is comprised ___ several experts.", "options": ["of", "with", "by", "in"], "correctAnswerIndex": 0 },
+    { "question": "So ___ was the story that everyone was moved to tears.", "options": ["poignant", "poignantly", "a poignant", "the poignant"], "correctAnswerIndex": 0 },
+    { "question": "Had it not been for your help, I ___ failed.", "options": ["would", "would have", "will have", "had"], "correctAnswerIndex": 1 }
+  ]
+}

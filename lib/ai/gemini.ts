@@ -155,3 +155,39 @@ Example format:
     throw new ApiError(error.message || 'Gemini 어휘 목록 생성 중 오류가 발생했습니다.', 500);
   }
 }
+
+// --- 水平测试问题生成 ---
+
+export async function generateLevelTestQuestions(
+  level: string,
+  count: number
+): Promise<Array<{ question: string; options: string[]; correctAnswerIndex: number }>> {
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const prompt = `You are an expert English proficiency test creator. Generate ${count} multiple-choice questions to assess a user's English proficiency at the CEFR level "${level}". The questions should cover a mix of vocabulary and grammar.
+The output must be a valid JSON array of objects. Do not include any text or markdown formatting before or after the JSON array.
+Each object must have these keys: "question" (string), "options" (an array of 4 strings), and "correctAnswerIndex" (the 0-based index of the correct answer in the options array).
+
+Example format:
+[
+  {
+    "question": "Which sentence is grammatically correct?",
+    "options": ["He don't like coffee.", "He doesn't likes coffee.", "He doesn't like coffee.", "He not like coffee."],
+    "correctAnswerIndex": 2
+  }
+]`;
+
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+
+    // 清理并解析 JSON
+    const cleanedJson = responseText.replace(/```json\n|```/g, '').trim();
+    const testQuestions = JSON.parse(cleanedJson);
+
+    return testQuestions;
+
+  } catch (error: any) {
+    console.error('Gemini level test questions generation error:', error);
+    throw new ApiError(error.message || 'Gemini 레벨 테스트 질문 생성 중 오류가 발생했습니다.', 500);
+  }
+}
