@@ -2,6 +2,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { SpeechClient } from '@google-cloud/speech';
 import { ApiError } from './errors';
 
+const { protos } = require('@google-cloud/speech') as typeof import('@google-cloud/speech');
+
 // --- 初始化客户端 ---
 
 // 初始化 Gemini API 客户端
@@ -72,7 +74,7 @@ export async function analyzePronunciationWithGoogle(
     const audioBytes = Buffer.from(await audioBlob.arrayBuffer()).toString('base64');
     const audio = { content: audioBytes };
     const config = {
-      encoding: 'WEBM_OPUS', // 假设从浏览器录制的是 webm 格式
+      encoding: protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding.WEBM_OPUS, // 修复：使用正确的枚举值
       sampleRateHertz: 48000, // MediaRecorder 默认采样率通常是 48000
       languageCode: 'en-US',
     };
