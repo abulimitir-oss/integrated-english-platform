@@ -41,17 +41,20 @@ export async function POST(request: Request) {
         }
 
         // 如果 AI 提供商是 gemini，则调用 Gemini API
-        try {
-          if (aiProvider === 'gemini') {
-            const vocabularyList = await generateVocabularyList(level, count);
-            return NextResponse.json(vocabularyList);
+        let vocabularyList;
+        if (aiProvider === 'gemini') {
+          try {
+            vocabularyList = await generateVocabularyList(level, count);
+          } catch (geminiError) {
+            console.warn('Gemini API call failed for vocabulary, using fallback data. Reason:', geminiError);
+            vocabularyList = getFallbackData(level, count);
           }
-          throw new Error(`AI provider '${aiProvider}' is not configured.`);
-        } catch (apiError) {
-          console.warn('API call failed, using fallback data. Reason:', apiError);
-          const fallbackData = getFallbackData(level, count);
-          return NextResponse.json(fallbackData);
+        } else {
+          // 如果 AI_PROVIDER 不是 'gemini' (例如 'openai' 或未设置)，则直接使用备用数据
+          console.warn(`AI provider '${aiProvider}' is not configured for vocabulary generation. Using fallback data.`);
+          vocabularyList = getFallbackData(level, count);
         }
+        return NextResponse.json(vocabularyList);
       }
 
       default:
