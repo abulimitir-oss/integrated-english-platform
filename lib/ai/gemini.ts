@@ -1,110 +1,116 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { ApiError } from './errors'; // 假设 ApiError 在 lib/ai/errors.ts 中定义
-import { VocabularyWord } from '../types/vocabulary';
+import { SpeechClient } from '@google-cloud/speech';
+import { ApiError } from './errors';
 
-let genAI: GoogleGenerativeAI;
+// --- 初始化客户端 ---
 
-function getGeminiClient(): GoogleGenerativeAI {
-  if (!genAI) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error('CRITICAL: Gemini API key is not defined in environment variables.');
-      throw new ApiError('Gemini API 키가 서버에 설정되지 않았습니다.', 500);
-    }
-    genAI = new GoogleGenerativeAI(apiKey);
-  }
-  return genAI;
-}
+// 初始化 Gemini API 客户端
+// 确保您已在 .env.local 文件中设置了 GOOGLE_API_KEY
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
-export async function generateConversation(
+// 初始化 Google Cloud Speech-to-Text 客户端
+// 这需要您设置 Google Cloud 认证。
+// 请参考文档：https://cloud.google.com/docs/authentication/provide-credentials-adc
+const speechClient = new SpeechClient();
+
+
+// --- 对话生成 ---
+
+export async function generateGeminiConversation(
   scenario: string,
   userMessage: string,
   history: Array<{ role: string; content: string }>
 ): Promise<string> {
   try {
-    const client = getGeminiClient();
-    const model = client.getGenerativeModel({ model: 'gemini-pro' }); // 修正为稳定且有效的模型
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
-    // 将历史消息转换为 Gemini 格式
-    const geminiHistory = history.map(msg => {
-      // Gemini API 的角色是 'user' 和 'model'
-      const role = msg.role === 'assistant' ? 'model' : 'user';
-      return { role, parts: [{ text: msg.content }] };
-    });
+    // 转换历史记录格式以适应 Gemini
+    const geminiHistory = history.map(msg => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    }));
 
-    const result = await model.startChat({
+    const chat = model.startChat({
       history: geminiHistory,
       generationConfig: {
+        maxOutputTokens: 1000,
         temperature: 0.7,
       },
-    }).sendMessage(userMessage);
+    });
 
-    const response = await result.response;
+    const systemInstruction = `You are a helpful English conversation partner in a ${scenario} scenario. Respond naturally and helpfully in English.`;
+    const fullPrompt = `${systemInstruction}\n\nUser: ${userMessage}`;
+
+    const result = await chat.sendMessage(fullPrompt);
+    const response = result.response;
     const text = response.text();
 
     if (!text) {
-      throw new Error('Gemini 응답이 비어있습니다.');
+      throw new Error('AI 응답이 비어있습니다.');
     }
     return text;
+
   } catch (error: any) {
     console.error('Gemini conversation generation error:', error);
-    // 针对 Gemini API 的错误处理可能需要根据实际错误结构进行调整
-    throw new ApiError(
-      error.message || 'Gemini 대화 생성 중 알 수 없는 오류가 발생했습니다.',
-      error.status || 500
-    );
+    throw new ApiError(error.message || 'Gemini 대화 생성 중 오류가 발생했습니다.', 500);
   }
 }
 
-export async function generateVocabularyList(
-  level: string,
-  count: number,
-  language: string = '中文'
-): Promise<VocabularyWord[]> {
-  try {
-    const client = getGeminiClient();
-    const model = client.getGenerativeModel({ model: 'gemini-pro' }); // 修正为稳定且有效的模型
 
-    const prompt = `
-      Please generate a list of ${count} English vocabulary words suitable for the CEFR level "${level}".
-      For each word, provide its IPA transcription, definition in English, translation in ${language}, an example sentence, and a simple mnemonic.
-      Your response MUST be a valid JSON array of objects, with no other text, explanations, or markdown formatting.
-      Each object in the array should have the following structure: { "word": "...", "ipa": "...", "definition": "...", "translation": "...", "exampleSentence": "...", "mnemonic": "..." }.
-    `;
+// --- 发音分析 ---
+
+export async function analyzePronunciationWithGoogle(
+  audioBlob: Blob,
+  expectedText: string
+): Promise<{
+  score: number;
+  feedback: string;
+  transcription: string;
+}> {
+  try {
+    // 1. 使用 Google Cloud Speech-to-Text 进行语音转写
+    const audioBytes = Buffer.from(await audioBlob.arrayBuffer()).toString('base64');
+    const audio = { content: audioBytes };
+    const config = {
+      encoding: 'WEBM_OPUS', // 假设从浏览器录制的是 webm 格式
+      sampleRateHertz: 48000, // MediaRecorder 默认采样率通常是 48000
+      languageCode: 'en-US',
+    };
+    const request = { audio, config };
+
+    const [speechResponse] = await speechClient.recognize(request);
+    console.log('Google Speech-to-Text raw response:', JSON.stringify(speechResponse, null, 2)); // 添加此行
+    const transcription = speechResponse.results
+      ?.map(result => result.alternatives?.[0].transcript)
+      .join('\n') || '';
+
+    if (!transcription) {
+      console.error('Transcription was empty. Speech-to-Text might have failed to recognize speech or returned no results.'); // 添加此行
+      throw new Error('음성을 텍스트로 변환하지 못했습니다.');
+    }
+
+    // 2. 使用 Gemini-Pro 评估发音
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const prompt = `You are an expert English pronunciation evaluator. Compare the transcribed text with the expected text and provide detailed feedback in Korean. Focus on pronunciation accuracy, clarity, and naturalness.
+
+Expected text: "${expectedText}"
+Transcribed text: "${transcription}"
+
+Please evaluate the pronunciation and provide a score (0-100) and detailed feedback in Korean. The score should be clearly marked like this: "Score: 85/100".`;
 
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let text = response.text();
+    const evaluation = result.response.text();
 
-    // 清理 Gemini 可能返回的 markdown 格式
-    text = text.replace(/^```json\s*/, '').replace(/```$/, '').trim();
+    const scoreMatch = evaluation.match(/Score:\s*(\d+)/i);
+    const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 75; // 如果找不到分数，默认为 75
 
-    if (!text) {
-      throw new Error('Gemini returned an empty response for vocabulary list.');
-    }
-
-    // 解析 JSON 响应
-    const vocabularyList: VocabularyWord[] = JSON.parse(text);
-
-    if (!Array.isArray(vocabularyList) || vocabularyList.length === 0) {
-      throw new Error('Failed to parse a valid vocabulary array from Gemini response.');
-    }
-
-    return vocabularyList;
+    return {
+      score,
+      feedback: evaluation.replace(/Score:\s*\d+\/100[:\s]*/i, '').trim(),
+      transcription: transcription,
+    };
   } catch (error: any) {
-    console.error('Gemini vocabulary generation error:', error);
-
-    // 针对 Google API 的特定错误进行更详细的诊断
-    if (error.message && error.message.includes('404')) {
-       console.error("A 404 error from Google suggests the 'Generative Language API' may not be enabled in your Google Cloud project. Please check https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com");
-    }
-    if (error.message && error.message.includes('API key not valid')) {
-      console.error("The Gemini API key is not valid. Please check your .env.local file and ensure the key is correct and has not expired.");
-    }
-
-    throw new ApiError(
-      error.message || 'An unknown error occurred while generating vocabulary with Gemini.',
-      error.status || 500
-    );
+    console.error('Google pronunciation analysis error:', error);
+    throw new ApiError(error.message || 'Google 음성 분석 중 오류가 발생했습니다.', 500);
   }
 }

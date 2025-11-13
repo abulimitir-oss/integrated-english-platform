@@ -12,7 +12,7 @@ class SpeakingService {
 
   private async handleApiError(error: any, customMessage: string): Promise<never> {
     console.error(customMessage, error);
-    throw new Error(customMessage);
+    throw new Error(`${customMessage}: ${error.message || error}`); // 保留原始错误信息
   }
 
   // 语音转文字
@@ -38,7 +38,7 @@ class SpeakingService {
     formData.append('text', text);
 
     try {
-      const response = await fetch('/api/speaking', {
+      const response = await fetch('/api/speech', {
         method: 'POST',
         body: formData,
       });

@@ -116,7 +116,8 @@ export default function ConversationInterface({
       timestamp: new Date(),
     }
 
-    setMessages(prev => [...prev, userMessage])
+    const updatedMessagesWithUser = [...messages, userMessage]; // 包含用户消息
+    setMessages(updatedMessagesWithUser);
     setInput('')
     setIsLoading(true)
 
@@ -127,15 +128,23 @@ export default function ConversationInterface({
         body: JSON.stringify({
           scenario,
           message: input,
-          history: messages.map(m => ({ role: m.role, content: m.content })),
+          history: updatedMessagesWithUser.map(m => ({ role: m.role, content: m.content })), // API history should include the current message
         }),
       })
 
-      const data = await response.json()
-      
       if (!response.ok) {
-        throw new Error(data.error || '응답을 받지 못했습니다.')
+        // 如果响应不是 OK，读取文本内容以获取详细错误信息
+        const errorText = await response.text();
+        console.error('API 响应错误 (非 JSON):', errorText);
+        // 尝试解析 JSON，如果失败则使用通用错误消息
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.error || `服务器错误: ${response.status}`);
+        } catch {
+          throw new Error(`服务器返回非 JSON 错误: ${response.status} - ${errorText.substring(0, 100)}...`);
+        }
       }
+      const data = await response.json();
 
       const aiMessage: Message = {
         role: 'assistant',
@@ -143,26 +152,30 @@ export default function ConversationInterface({
         timestamp: new Date(),
       }
       
-      setMessages(prev => [...prev, aiMessage])
+      // 将用户消息和 AI 消息一起更新到状态中
+      setMessages(prev => [...prev, aiMessage]);
 
       // 대화 자동 저장
-      const updatedMessages = [...messages, userMessage, aiMessage]
       const conversation: ConversationHistory = {
         id: conversationId || generateId(),
         scenario,
-        messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
+        messages: [...updatedMessagesWithUser, aiMessage].map(m => ({ role: m.role, content: m.content })), // 保存所有消息
         timestamp: new Date()
       }
       storage.addConversationHistory(conversation)
       
       // 대화 내역이 변경되었음을 부모 컴포넌트에 알림
       onHistoryChange?.()
-      setConversationId(conversation.id)
+      if (!conversationId) setConversationId(conversation.id);
 
     } catch (error) {
       console.error('Error sending message:', error);
       if (error instanceof Error) {
-        alert(`오류: ${error.message}`);
+        // 使用更友好的错误提示
+        const friendlyMessage = error.message.includes('404') 
+          ? '대화 API를 찾을 수 없습니다. (404 Not Found)' 
+          : '메시지 전송 중 오류가 발생했습니다.';
+        alert(friendlyMessage);
       } else {
         alert('메시지 전송 중 알 수 없는 오류가 발생했습니다.');
       }
@@ -233,11 +246,17 @@ export default function ConversationInterface({
         body: formData,
       })
 
-      const data = await response.json()
-      
       if (!response.ok) {
-        throw new Error(data.error || '서버 응답 오류')
+        const errorText = await response.text();
+        console.error('API 响应错误 (非 JSON):', errorText);
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.error || `服务器错误: ${response.status}`);
+        } catch {
+          throw new Error(`服务器返回非 JSON 错误: ${response.status} - ${errorText.substring(0, 100)}...`);
+        }
       }
+      const data = await response.json();
 
       // 인식된 텍스트를 입력 필드에 설정
       setInput(data.transcription)
@@ -252,8 +271,13 @@ export default function ConversationInterface({
         setMessages(prev => [...prev, feedbackMessage])
       }
     } catch (error) {
-      console.error('Error submitting audio:', error)
-      alert('음성 처리 중 오류가 발생했습니다.')
+      console.error('Error submitting audio:', error);
+      if (error instanceof Error && error.message.includes('음성을 텍스트로 변환하지 못했습니다')) {
+        // 如果错误是“未能将语音转换为文本”，则显示“请重新输入”
+        alert('인식된 음성이 없습니다. 다시 입력해주세요. (请重新输入)');
+      } else {
+        alert('음성 처리 중 오류가 발생했습니다.');
+      }
     } finally {
       setIsLoading(false)
     }

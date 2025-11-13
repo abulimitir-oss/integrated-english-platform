@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { analyzePronunciation } from '@/lib/ai/openai'
+import { analyzePronunciationWithGoogle } from '@/lib/ai/gemini' // 导入新的 Google 函数
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,13 +37,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const analysis = await analyzePronunciation(audio, text)
+    const analysis = await analyzePronunciationWithGoogle(audio, text)
 
     return NextResponse.json(analysis)
   } catch (error) {
     console.error('Speech analysis error:', error)
+    // 将捕获到的原始错误信息返回给客户端，而不是一个通用消息
+    const errorMessage = error instanceof Error ? error.message : '발음 분석 중 알 수 없는 오류가 발생했습니다.';
     return NextResponse.json(
-      { error: '발음 분석 중 오류가 발생했습니다.' },
+      { error: errorMessage },
       { status: 500 }
     )
   }
