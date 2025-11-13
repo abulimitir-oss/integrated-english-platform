@@ -78,7 +78,9 @@ export async function analyzePronunciationWithGoogle(
     };
     const request = { audio, config };
 
-    const [speechResponse] = await speechClient.recognize(request);
+    // 修复：避免直接解构，以解决 TypeScript 类型推断问题
+    const recognizeResult = await speechClient.recognize(request);
+    const speechResponse = recognizeResult[0];
     console.log('Google Speech-to-Text raw response:', JSON.stringify(speechResponse, null, 2)); // 添加此行
     const transcription = speechResponse.results
       ?.map(result => result.alternatives?.[0].transcript)
