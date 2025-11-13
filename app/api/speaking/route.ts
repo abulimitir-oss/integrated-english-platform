@@ -25,19 +25,13 @@ function getGeminiModel() {
   const genAI = new GoogleGenerativeAI(apiKey);
 
   // 关键修复：responseMimeType 在顶级，generationConfig 只放生成参数
-  geminiModel = genAI.getGenerativeModel(
-    {
-      model: 'gemini-2.0-flash',
-      // 正确位置
-      responseMimeType: 'application/json',
-
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 2048,
-      },
-    },
-  );
-
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.0-flash',
+    generationConfig: {
+      responseMimeType: 'application/json', // 正确的位置
+      temperature: 0.7,
+    }
+  });
   console.log('Gemini initialized with v1 API and responseMimeType');
   return geminiModel; // 必须 return！
 }
